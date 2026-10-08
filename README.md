@@ -14,3 +14,9 @@ flowchart LR
     FFmpeg --> Model[Vosk Offline Recognizer]
     Model --> Text[Extracted Text]
     Text -->|Send Response| User
+---
+## 🚀 Quickstart
+```bash
+git clone https://github.com/yandereye1/VoiceTexterBot.git
+cd VoiceTexterBot/VoiceTexterBot1
+dotnet run
