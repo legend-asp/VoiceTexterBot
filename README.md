@@ -1,4 +1,3 @@
-```markdown
 # 🎙️ VoiceTexterBot — High-Throughput Speech-to-Text Telegram Bot
 [![Framework](https://img.shields.io/badge/.NET-9.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)]()
 [![Telegram](https://img.shields.io/badge/Telegram_Bot-API_22-2ca5e0?style=for-the-badge&logo=telegram&logoColor=white)]()
