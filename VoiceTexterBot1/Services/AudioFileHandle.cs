@@ -54,45 +54,61 @@ namespace VoiceTexterBot.Services
             }
         }
 
-        public async Task Download(string fileId, CancellationToken ct)
+        public async Task<string> Download(string fileId, CancellationToken ct)
         {
-            string inputAudioFilePath = Path.Combine(
-                _downloadsFolder,
-                $"{_appSettings.AudioFileName}.{_appSettings.InputAudioFormat}");
+            // Генерируем уникальный путь под каждый запрос
+            string uniqueFileName = $"{Guid.NewGuid()}.{_appSettings.InputAudioFormat}";
+            string inputAudioFilePath = Path.Combine(_downloadsFolder, uniqueFileName);
 
             try
             {
-                _logger.LogInformation($"Downloading to: {inputAudioFilePath}");
+                _logger.LogInformation($"Скачиваем аудио в: {inputAudioFilePath}");
 
-                using (var destinationStream = File.Create(inputAudioFilePath))
-                {
-                    var file = await _telegramBotClient.GetFile(fileId, ct);
-                    if (file.FilePath == null)
-                        throw new InvalidOperationException("File path is null");
+                await using var destinationStream = File.Create(inputAudioFilePath);
+                var file = await _telegramBotClient.GetFile(fileId, ct);
 
-                    await _telegramBotClient.DownloadFile(file.FilePath, destinationStream, ct);
-                }
+                if (file.FilePath == null)
+                    throw new InvalidOperationException("Файл в Telegram не найден");
+
+                await _telegramBotClient.DownloadFile(file.FilePath, destinationStream, ct);
+
+                return inputAudioFilePath; // Возвращаем уникальный путь!
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Download failed");
+                _logger.LogError(ex, "Ошибка скачивания файла");
+                // Если скачивание упало, подчищаем недокачанный огрызок
+                if (File.Exists(inputAudioFilePath))
+                    File.Delete(inputAudioFilePath);
+
                 throw;
             }
         }
 
-        public string Process(string languageCode)
+        public string Process(string inputAudioPath, string languageCode)
         {
-            string inputAudioPath = Path.Combine(_appSettings.DownloadsFolder, $"{_appSettings.AudioFileName}.{_appSettings.InputAudioFormat}");
-            string outputAudioPath = Path.Combine(_appSettings.DownloadsFolder, $"{_appSettings.AudioFileName}.{_appSettings.OutputAudioFormat}");
+            // Автоматически получаем путь к .wav: "xyz.ogg" -> "xyz.wav"
+            string outputAudioPath = Path.ChangeExtension(inputAudioPath, _appSettings.OutputAudioFormat);
 
-            Console.WriteLine("Начинаем конвертацию...");
-            AudioConverter.TryConvert(inputAudioPath, outputAudioPath);
-            Console.WriteLine("Файл конвертирован");
+            try
+            {
+                _logger.LogInformation("Конвертация в WAV...");
+                AudioConverter.TryConvert(inputAudioPath, outputAudioPath);
 
-            Console.WriteLine("Начинаем распознавание...");
-            var speechText = SpeechDetector.DetectSpeech(outputAudioPath, _appSettings.InputAudioBitrate, languageCode);
-            Console.WriteLine("Файл распознан.");
-            return speechText;
+                _logger.LogInformation("Распознавание речи...");
+                var speechText = SpeechDetector.DetectSpeech(outputAudioPath, _appSettings.InputAudioBitrate, languageCode);
+
+                return speechText;
+            }
+            finally
+            {
+                // 🧹 Блок finally выполнится ВСЕГДА — даже если произойдет ошибка или сбой!
+                // Удаляем оба временных файла, чтобы не засорять диск
+                if (File.Exists(inputAudioPath)) File.Delete(inputAudioPath);
+                if (File.Exists(outputAudioPath)) File.Delete(outputAudioPath);
+
+                _logger.LogInformation("Временные файлы удалены.");
+            }
         }
     }
 }

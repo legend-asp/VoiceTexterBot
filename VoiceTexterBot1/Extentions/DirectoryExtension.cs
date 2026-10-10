@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,10 +13,17 @@ namespace VoiceTexterBot.Extensions
         /// </summary>
         public static string GetSolutionRoot()
         {
-            var dir = Path.GetDirectoryName(Directory.GetCurrentDirectory());
-            var fullname = Directory.GetParent(dir).FullName;
-            var projectRoot = fullname.Substring(0, fullname.Length - 4);
-            return Directory.GetParent(projectRoot)?.FullName;
+            var current = new DirectoryInfo(AppContext.BaseDirectory);
+            while (current != null)
+            {
+                if (current.GetFiles("*.sln").Length > 0 || current.GetDirectories("Speech-models").Length > 0)
+                {
+                    return current.FullName;
+                }
+                current = current.Parent;
+            }
+
+            return AppContext.BaseDirectory;
         }
     }
 }

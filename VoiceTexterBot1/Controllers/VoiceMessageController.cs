@@ -24,10 +24,15 @@ namespace VoiceTexterBot.Controllers
             if (fileId == null)
                 return;
 
-            await _audioFileHandler.Download(fileId, ct);
+            // 1. Скачиваем файл и сохраняем его уникальный путь
+            string filePath = await _audioFileHandler.Download(fileId, ct);
 
-            string userLanguageCode = _memoryStorage.GetSession(message.Chat.Id).LanguageCode; // Здесь получим язык из сессии пользователя
-            var result = _audioFileHandler.Process(userLanguageCode); // Запустим обработку
+            // 2. Получаем язык пользователя из сессии
+            string userLanguageCode = _memoryStorage.GetSession(message.Chat.Id).LanguageCode;
+
+            // 3. Передаем путь к файлу и язык в обработчик
+            var result = _audioFileHandler.Process(filePath, userLanguageCode);
+
             await _telegramClient.SendMessage(message.Chat.Id, result, cancellationToken: ct);
         }
     }
