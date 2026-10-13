@@ -61,3 +61,7 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
+# Исключить внешние бинарники, модели и HTML-документацию из языковой статистики
+FFmpeg-win64/** linguist-vendored
+Speech-models/** linguist-vendored
+*.html linguist-detectable=false
