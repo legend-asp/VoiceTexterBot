@@ -41,3 +41,8 @@ dotnet run
 ```
 
 > **Note:** Set your Telegram bot token in `appsettings.json` or pass it as an environment variable before starting.
+
+---
+
+## 👨‍💻 Author
+GitHub: [@yandereye1](https://github.com/yandereye1)
