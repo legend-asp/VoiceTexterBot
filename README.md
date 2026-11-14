@@ -35,7 +35,7 @@ flowchart LR
 ## 🚀 Quickstart
 
 ```bash
-git clone https://github.com/yandereye1/VoiceTexterBot.git
+git clone https://github.com/legend-asp/VoiceTexterBot.git
 cd VoiceTexterBot/VoiceTexterBot1
 dotnet run
 ```
@@ -45,4 +45,4 @@ dotnet run
 ---
 
 ## 👨‍💻 Author
-GitHub: [@yandereye1](https://github.com/yandereye1)
+GitHub: [@legend-asp](https://github.com/legend-asp)
